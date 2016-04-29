@@ -104,6 +104,15 @@ OM_uint32 gss_store_cred_into(
 )
 _OPTIONAL_DEFINES = ('GSS_C_DELEG_POLICY_FLAG', 'GSS_C_AF_INET6')
 
+from subprocess import Popen, PIPE
+def _check_output(argv):
+    p = Popen(argv, stdout=PIPE)
+    (out, err) = p.communicate()
+    if p.returncode != 0:
+        raise Exception('Command failed')
+    else:
+        return out
+
 
 def _detect_verify_args():
     source = '#include <gssapi/gssapi.h>'
@@ -117,16 +126,8 @@ def _detect_verify_args():
         kwargs['extra_link_args'].extend(['-framework', 'GSS'])
     else:
         # Build using libgssapi on other POSIX systems
-        try:
-            config_compile_flags = subprocess.check_output(["krb5-config", "--cflags", "gssapi"]).split()
-            config_link_flags = subprocess.check_output(["krb5-config", "--libs", "gssapi"]).split()
-        except:
-            try:
-                config_compile_flags = subprocess.check_output(["pkg-config", "--cflags", "gss"]).split()
-                config_link_flags = subprocess.check_output(["pkg-config", "--libs", "gss"]).split()
-            except:
-                config_compile_flags = []
-                config_link_flags = []
+        config_compile_flags = _check_output(["krb5-config", "--cflags", "gssapi"]).split()
+        config_link_flags = _check_output(["krb5-config", "--libs", "gssapi"]).split()
         config_compile_flags = [
             f.encode('utf-8') if isinstance(f, six.text_type) else f
             for f in config_compile_flags
