@@ -54,7 +54,7 @@ setup(
         "gssapi.bindings": ["*.cdef"]
     },
 
-    setup_requires=REQUIRES,
+    #setup_requires=REQUIRES,
     install_requires=REQUIRES,
 
     # for cffi
